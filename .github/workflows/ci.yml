@@ -34,6 +34,16 @@ jobs:
           docker logs ai-api
           exit 1
 
+      - name: Copy test files into container
+        run: |
+          docker cp tests ai-api:/app/tests
+          docker cp requirements-dev.txt ai-api:/app/requirements-dev.txt
+
+      - name: Run pytest
+        run: |
+          docker exec ai-api pip install --no-cache-dir -r /app/requirements-dev.txt
+          docker exec ai-api python -m pytest -v /app/tests
+
       - name: Test image prediction
         run: |
           curl -fsS -X POST \
