@@ -1,0 +1,52 @@
+
+name: AI Inference CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t aws-ai-inference:ci .
+
+      - name: Start inference container
+        run: docker run -d --name ai-api -p 8000:8000 aws-ai-inference:ci
+
+      - name: Wait for API health check
+        run: |
+          for i in {1..60}; do
+            if curl -fsS http://localhost:8000/health; then
+              echo "API is healthy"
+              exit 0
+            fi
+            sleep 5
+          done
+
+          echo "API failed to become healthy"
+          docker logs ai-api
+          exit 1
+
+      - name: Test image prediction
+        run: |
+          curl -fsS -X POST \
+            -F "file=@tests/load_test.jpg" \
+            http://localhost:8000/predict \
+            -o prediction.json
+
+          python -c "import json; d=json.load(open('prediction.json')); assert isinstance(d.get('prediction'), str) and isinstance(d.get('confidence'), (int, float)) and 0 <= d['confidence'] <= 1; print('Prediction test passed:', d)"
+
+      - name: Show container logs on failure
+        if: failure()
+        run: docker logs ai-api
+
+      - name: Stop container
+        if: always()
+        run: docker rm -f ai-api || true
