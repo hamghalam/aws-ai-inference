@@ -6,7 +6,7 @@
   ],
   "cpu": "1024",
   "memory": "3072",
-  "executionRoleArn": "arn:aws:iam::857506162428:role/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/ecsTaskExecutionRole",
   "runtimePlatform": {
     "operatingSystemFamily": "LINUX",
     "cpuArchitecture": "X86_64"
@@ -14,7 +14,7 @@
   "containerDefinitions": [
     {
       "name": "aws-ai-inference",
-      "image": "857506162428.dkr.ecr.us-east-2.amazonaws.com/aws-ai-inference:v1",
+      "image": "YOUR_AWS_ACCOUNT_ID.dkr.ecr.us-east-2.amazonaws.com/aws-ai-inference:v1",
       "essential": true,
       "portMappings": [
         {
@@ -33,3 +33,4 @@
     }
   ]
 }
+
